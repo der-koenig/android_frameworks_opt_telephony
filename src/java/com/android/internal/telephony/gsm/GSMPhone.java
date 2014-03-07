@@ -120,6 +120,7 @@ public class GSMPhone extends PhoneBase {
 
     private String mImei;
     private String mImeiSv;
+    private String mManualNetworkSelectionRat = "";
     private String mVmNumber;
 
     // Create Cfu (Call forward unconditional) so that dialling number &
@@ -1067,6 +1068,7 @@ public class GSMPhone extends PhoneBase {
 
         // get the message
         Message msg = obtainMessage(EVENT_SET_NETWORK_AUTOMATIC_COMPLETE, nsm);
+        mManualNetworkSelectionRat = "";
         if (LOCAL_DEBUG)
             Rlog.d(LOG_TAG, "wrapping and sending message to connect automatically");
 
@@ -1087,7 +1089,15 @@ public class GSMPhone extends PhoneBase {
         // get the message
         Message msg = obtainMessage(EVENT_SET_NETWORK_MANUAL_COMPLETE, nsm);
 
-        mCi.setNetworkSelectionModeManual(network.getOperatorNumeric(), msg);
+        mManualNetworkSelectionRat = "";
+        if(network.getOperatorRat().equals("WCDMA")) {
+            mManualNetworkSelectionRat = "RAT3";
+        } else if(network.getOperatorRat().equals("GSM")) {
+            mManualNetworkSelectionRat = "RAT2";
+        }
+
+        mCi.setNetworkSelectionModeManual(mManualNetworkSelectionRat + 
+                network.getOperatorNumeric(), msg);
     }
 
     @Override
@@ -1490,7 +1500,7 @@ public class GSMPhone extends PhoneBase {
         // nsm.operatorNumeric is "" if we're in automatic.selection.
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString(NETWORK_SELECTION_KEY, nsm.operatorNumeric);
+        editor.putString(NETWORK_SELECTION_KEY, mManualNetworkSelectionRat + nsm.operatorNumeric);
         editor.putString(NETWORK_SELECTION_NAME_KEY, nsm.operatorAlphaLong);
 
         // commit and log the result.

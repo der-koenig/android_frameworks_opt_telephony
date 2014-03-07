@@ -33,6 +33,7 @@ public class OperatorInfo implements Parcelable {
     private String mOperatorAlphaLong;
     private String mOperatorAlphaShort;
     private String mOperatorNumeric;
+    private String mOperatorRat;
 
     private State mState = State.UNKNOWN;
 
@@ -52,6 +53,11 @@ public class OperatorInfo implements Parcelable {
         return mOperatorNumeric;
     }
 
+    public String
+    getOperatorRat() {
+        return mOperatorRat;
+    }
+
     public State
     getState() {
         return mState;
@@ -61,11 +67,20 @@ public class OperatorInfo implements Parcelable {
                 String operatorAlphaShort,
                 String operatorNumeric,
                 State state) {
+        this (operatorAlphaLong, operatorAlphaShort,
+                operatorNumeric, state, "");
+    }
+
+    OperatorInfo(String operatorAlphaLong,
+                String operatorAlphaShort,
+                String operatorNumeric,
+                State state,
+                String operatorRat) {
 
         mOperatorAlphaLong = operatorAlphaLong;
         mOperatorAlphaShort = operatorAlphaShort;
         mOperatorNumeric = operatorNumeric;
-
+        mOperatorRat = operatorRat;
         mState = state;
     }
 
@@ -75,7 +90,17 @@ public class OperatorInfo implements Parcelable {
                 String operatorNumeric,
                 String stateString) {
         this (operatorAlphaLong, operatorAlphaShort,
-                operatorNumeric, rilStateToState(stateString));
+                operatorNumeric, stateString, "");
+    }
+
+    public OperatorInfo(String operatorAlphaLong,
+                String operatorAlphaShort,
+                String operatorNumeric,
+                String stateString,
+                String operatorRat) {
+        this (operatorAlphaLong, operatorAlphaShort,
+                operatorNumeric, rilStateToState(stateString),
+                operatorRat);
     }
 
     /**
@@ -96,12 +121,12 @@ public class OperatorInfo implements Parcelable {
         }
     }
 
-
     @Override
     public String toString() {
         return "OperatorInfo " + mOperatorAlphaLong
                 + "/" + mOperatorAlphaShort
                 + "/" + mOperatorNumeric
+                + "/" + mOperatorRat
                 + "/" + mState;
     }
 
@@ -128,6 +153,7 @@ public class OperatorInfo implements Parcelable {
         dest.writeString(mOperatorAlphaShort);
         dest.writeString(mOperatorNumeric);
         dest.writeSerializable(mState);
+        dest.writeString(mOperatorRat);
     }
 
     /**
@@ -142,7 +168,8 @@ public class OperatorInfo implements Parcelable {
                         in.readString(), /*operatorAlphaLong*/
                         in.readString(), /*operatorAlphaShort*/
                         in.readString(), /*operatorNumeric*/
-                        (State) in.readSerializable()); /*state*/
+                        (State) in.readSerializable(), /*state*/
+                        in.readString()); /*operatorRat*/
                 return opInfo;
             }
 
