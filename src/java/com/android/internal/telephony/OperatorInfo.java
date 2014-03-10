@@ -16,6 +16,8 @@
 
 package com.android.internal.telephony;
 
+import java.util.HashMap;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -29,6 +31,9 @@ public class OperatorInfo implements Parcelable {
         CURRENT,
         FORBIDDEN;
     }
+
+    private static HashMap<String, String[]> mPlmnEntries = 
+            new HashMap<String, String[]>();
 
     private String mOperatorAlphaLong;
     private String mOperatorAlphaShort;
@@ -79,6 +84,18 @@ public class OperatorInfo implements Parcelable {
 
         mOperatorAlphaLong = operatorAlphaLong;
         mOperatorAlphaShort = operatorAlphaShort;
+        if((mOperatorAlphaLong == null || mOperatorAlphaLong.equals("Unknown"))
+           && (mOperatorAlphaShort == null || mOperatorAlphaShort.equals("Unknown"))) {
+            String[] operatorNames = getOperatorNamesFromConfig(operatorNumeric);
+            if(operatorNames != null) {
+                mOperatorAlphaLong = operatorNames[0];
+                mOperatorAlphaShort = operatorNames[1];
+            }
+        }
+        if(mOperatorAlphaLong == null && mOperatorAlphaShort == null) {
+            mOperatorAlphaLong = operatorNumeric;
+            mOperatorAlphaShort = operatorNumeric;
+        }
         mOperatorNumeric = operatorNumeric;
         mOperatorRat = operatorRat;
         mState = state;
@@ -118,6 +135,19 @@ public class OperatorInfo implements Parcelable {
         } else {
             throw new RuntimeException(
                 "RIL impl error: Invalid network state '" + s + "'");
+        }
+    }
+
+    public static String[] getOperatorNamesFromConfig(String numeric) {
+        if(mPlmnEntries.containsKey(numeric)) {
+            return mPlmnEntries.get(numeric);
+        } else {
+            PlmnOverride plmnOverride = new PlmnOverride();
+            String[] operatorNames = plmnOverride.getOperatorNames(numeric);
+            if(operatorNames != null) {
+                mPlmnEntries.put(numeric, operatorNames);
+            }
+            return operatorNames;
         }
     }
 
